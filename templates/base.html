@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="/static/css/admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        <h1>Admin Dashboard</h1>
+        <div class="model-list">
+            {{ range .Models }}
+            <div class="model-card">
+                <button onclick="window.location.href='/admin/list?model={{ .TableName }}'">{{ .Name }}</button>
+            </div>
+            {{ end }}
+        </div>
+    </div>
+</body>
+</html>
+
