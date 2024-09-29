@@ -42,6 +42,8 @@ func (p *Panel) RegisterModel(modelStruct interface{}, tableName string) error {
 func (p *Panel) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.URL.Path)
 	switch r.URL.Path {
+	case "/":
+		handler.Home(w, r, p.models, p.templates)
 	case "/list":
 		handler.List(w, r, p.db, p.models, p.templates)
 	}
