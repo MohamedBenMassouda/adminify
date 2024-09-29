@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Model.Name}} List</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>{{.Model.Name}} List</h1>
+        </header>
+        <main>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            {{range .Model.Fields}}
+                            <th>{{.Name}}</th>
+                            {{end}}
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range .Data}}
+                        <tr>
+                            {{range $key, $value := .}}
+                            <td>{{$value}}</td>
+                            {{end}}
+                            <td class="actions">
+                                <a href="/admin/edit/{{.Model.Name}}/{{index . "id"}}" class="button edit">Edit</a>
+                                <a href="/admin/delete/{{.Model.Name}}/{{index . "id"}}" class="button delete">Delete</a>
+                            </td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
+            <div class="controls">
+                <a href="/admin/create/{{.Model.Name}}" class="button create">Create New {{.Model.Name}}</a>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
