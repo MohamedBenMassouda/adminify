@@ -39,6 +39,5 @@ func (a *Adminify) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // RegisterGinRoute registers the admin panel to a Gin route
 func (a *Adminify) RegisterGinRoute(r *gin.Engine) {
-	r.StaticFS(a.Panel.Path+"/static", a.Panel.GetStaticFS()) // Serve the static files
-	r.Any(a.Panel.Path+"/*any", gin.WrapH(a.Panel))           // Wrap the Adminify panel in a Gin handler
+	r.Any(a.Panel.Path+"/*any", gin.WrapH(a.Panel)) // Wrap the Adminify panel in a Gin handler
 }
