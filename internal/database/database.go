@@ -11,11 +11,15 @@ import (
 // DB wraps the sql.DB object and provides custom methods
 type DB struct {
 	*sql.DB
+	Driver string
 }
 
 // NewDB creates a new DB instance
-func NewDB(db *sql.DB) *DB {
-	return &DB{db}
+func NewDB(db *sql.DB, driver string) *DB {
+	return &DB{
+		DB:     db,
+		Driver: driver,
+	}
 }
 
 // Query executes a query and returns the results
@@ -117,7 +121,17 @@ func (db *DB) Update(model *model.Model, id interface{}, data map[string]interfa
 
 // Delete removes a record from the database
 func (db *DB) Delete(model *model.Model, id interface{}) error {
-	query := fmt.Sprintf("DELETE FROM %s WHERE id = ?", model.TableName)
+	var query string
+
+	switch db.Driver {
+	case "postgres":
+		query = fmt.Sprintf("DELETE FROM %s WHERE id = $1", model.TableName)
+	case "mysql", "sqlite", "sqlite3":
+		query = fmt.Sprintf("DELETE FROM %s WHERE id = ?", model.TableName)
+	default:
+		return fmt.Errorf("unsupported driver: %s", db.Driver)
+	}
+
 	_, err := db.Exec(query, id)
 	return err
 }
@@ -135,4 +149,16 @@ func (db *DB) GetByID(model *model.Model, id interface{}) (map[string]interface{
 	}
 
 	return results[0], nil
+}
+
+func (db *DB) Count(tableName string) (int, error) {
+	query := fmt.Sprintf("SELECT COUNT(*) FROM %s", tableName)
+	row := db.QueryRow(query)
+
+	var count int
+	if err := row.Scan(&count); err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }
