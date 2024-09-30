@@ -2,6 +2,7 @@ package admin
 
 import (
 	"database/sql"
+	"embed"
 	"html/template"
 	"log"
 	"net/http"
@@ -11,14 +12,21 @@ import (
 	"github.com/MohamedBenMassouda/adminify/internal/model"
 )
 
+//go:embed templates
+var templatesFS embed.FS
+
+//go:emned static
+var staticFS embed.FS
+
 type Panel struct {
 	models    map[string]*model.Model
 	db        *database.DB
 	templates *template.Template
+	Path      string
 }
 
-func NewPanel(db *sql.DB) (*Panel, error) {
-	templates, err := template.ParseGlob("templates/*.html")
+func NewPanel(db *sql.DB, path string) (*Panel, error) {
+	templates, err := template.ParseFS(templatesFS, "templates/*.html")
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +35,16 @@ func NewPanel(db *sql.DB) (*Panel, error) {
 		models:    make(map[string]*model.Model),
 		db:        database.NewDB(db),
 		templates: templates,
+		Path:      path,
 	}, nil
+}
+
+func (p *Panel) GetStaticFS() http.FileSystem {
+	return http.FS(staticFS)
+}
+
+func (p *Panel) GetModels() map[string]*model.Model {
+	return p.models
 }
 
 func (p *Panel) RegisterModel(modelStruct interface{}, tableName string) error {
@@ -42,9 +59,9 @@ func (p *Panel) RegisterModel(modelStruct interface{}, tableName string) error {
 func (p *Panel) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.URL.Path)
 	switch r.URL.Path {
-	case "/":
+	case p.Path + "/":
 		handler.Home(w, r, p.models, p.templates)
-	case "/list":
+	case p.Path + "/list":
 		handler.List(w, r, p.db, p.models, p.templates)
 	}
 }
