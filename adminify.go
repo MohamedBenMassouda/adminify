@@ -13,8 +13,8 @@ type Adminify struct {
 	Panel *admin.Panel
 }
 
-func NewAdminify(db *sql.DB, path string) Adminify {
-	panel, err := admin.NewPanel(db, path)
+func NewAdminify(db *sql.DB, driver, path string) Adminify {
+	panel, err := admin.NewPanel(db, driver, path)
 
 	if err != nil {
 		log.Fatal(err)
