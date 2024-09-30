@@ -13,15 +13,23 @@ import (
 func List(w http.ResponseWriter, r *http.Request, db *database.DB, models map[string]*model.Model, tmpl *template.Template) {
 	modelName := r.URL.Query().Get("model")
 	model, ok := models[modelName]
-	log.Println(model.Fields)
 
 	if !ok {
 		http.Error(w, "Model not found", http.StatusNotFound)
 		return
 	}
 
-	data, err := db.Query(sql_queries.ListQuery(model.TableName))
+	fieldNames := make([]string, 0)
+
+	for _, field := range model.Fields {
+		fieldNames = append(fieldNames, field.ColumnName)
+	}
+
+	log.Println(fieldNames)
+
+	data, err := db.Query(sql_queries.ListQuery(model.TableName, fieldNames))
 	if err != nil {
+		log.Println("Error querying database", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
