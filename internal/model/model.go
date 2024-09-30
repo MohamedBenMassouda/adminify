@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"log"
 	"reflect"
 )
 
@@ -12,9 +13,10 @@ type Model struct {
 }
 
 type Field struct {
-	SQLType string
-	Name    string
-	Type    reflect.Type
+	SQLType    string
+	Name       string
+	Type       reflect.Type
+	ColumnName string
 }
 
 func New(modelStruct interface{}, tableName string) (*Model, error) {
@@ -34,6 +36,8 @@ func New(modelStruct interface{}, tableName string) (*Model, error) {
 	}
 	fields := make([]Field, 0)
 
+	var checkTags []string = []string{"admin", "json"}
+
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 
@@ -41,10 +45,67 @@ func New(modelStruct interface{}, tableName string) (*Model, error) {
 			continue
 		}
 
+		var columnName string
+
+		if field.Type.Kind() == reflect.Slice {
+			log.Printf("Ignoring slice type field: %s\n", field.Name)
+			continue
+		}
+
+		if field.Type.Kind() == reflect.Ptr {
+			log.Printf("Ignoring pointer type field: %s\n", field.Name)
+			continue
+		}
+
+		if field.Type.Kind() == reflect.Struct {
+			if field.Name == "Model" || field.Name == "gorm.Model" {
+				for j := 0; j < field.Type.NumField(); j++ {
+					f := field.Type.Field(j)
+
+					if f.PkgPath != "" {
+						continue
+					}
+
+					columnName = f.Tag.Get("json")
+
+					if columnName == "-" {
+						continue
+					}
+
+					fields = append(fields, Field{
+						SQLType:    getSQLType(f.Type),
+						Name:       f.Name,
+						Type:       f.Type,
+						ColumnName: columnName,
+					})
+				}
+
+				continue
+			} else {
+				continue
+			}
+		}
+
+		for _, tag := range checkTags {
+			if tagValue := field.Tag.Get(tag); tagValue != "" {
+				columnName = tagValue
+				break
+			}
+		}
+
+		if columnName == "" {
+			columnName = field.Name
+		}
+
+		if columnName == "-" {
+			continue
+		}
+
 		fields = append(fields, Field{
-			SQLType: getSQLType(field.Type),
-			Name:    field.Name,
-			Type:    field.Type,
+			SQLType:    getSQLType(field.Type),
+			Name:       field.Name,
+			Type:       field.Type,
+			ColumnName: columnName,
 		})
 	}
 
