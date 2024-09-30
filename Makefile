@@ -1,7 +1,6 @@
 # Variables
 APP_NAME ?= adminify           # Default app name if not provided
 BUILD_DIR = bin
-CMD_DIR = cmd/adminify/main.go
 TEST_DIR = ./...
 GO_FILES = $(shell find . -name '*.go')
 
@@ -13,14 +12,10 @@ help:  ## Show help message
 
 .PHONY: build
 build: $(BUILD_DIR)  ## Build Go app
-	@go build -o $(BUILD_DIR)/$(APP_NAME) $(CMD_DIR) || exit 1
+	@go build -o $(BUILD_DIR)/$(APP_NAME) || exit 1
 
 $(BUILD_DIR):  ## Create bin directory if it doesn't exist
 	@mkdir -p $(BUILD_DIR)
-
-.PHONY: run
-run:  ## Run Go app
-	@go run $(CMD_DIR) || exit 1
 
 .PHONY: test
 test:  ## Run tests
