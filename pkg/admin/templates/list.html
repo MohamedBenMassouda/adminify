@@ -4,41 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{.Model.Name}} List</title>
-    <link rel="stylesheet" href="/static/css/list.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/2.3.0/alpine.js" defer></script>
 </head>
-<body>
-    <div class="container">
-        <header>
-            <h1>{{.Model.Name}} List</h1>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">{{.Model.Name}} List</h1>
         </header>
         <main>
-            <div class="table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            {{range .Model.Fields}}
-                            <th>{{.Name}}</th>
+            <div class="bg-white shadow-md rounded-lg overflow-hidden" x-data="{ searchTerm: '' }">
+                <div class="p-4 border-b">
+                    <input 
+                        type="text" 
+                        placeholder="Search..." 
+                        class="w-full px-3 py-2 border rounded-md"
+                        x-model="searchTerm"
+                    >
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                {{range .Model.Fields}}
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    {{.ColumnName}}
+                                </th>
+                                {{end}}
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {{range $i, $item := .Data}}
+                            <tr x-show="!searchTerm || Object.values($el.children).some(td => td.textContent.toLowerCase().includes(searchTerm.toLowerCase()))">
+                                {{range $j, $field := $.Model.Fields }}
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">{{index $item $field.ColumnName}}</div>
+                                </td>
+                                {{end}}
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <a href="/admin/edit/{{$.Model.Name}}/{{index . "id"}}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                                    <a href="/admin/delete/{{$.Model.Name}}/{{index . "id"}}" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure you want to delete this item?');">Delete</a>
+                                </td>
+                            </tr>
                             {{end}}
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {{range .Data}}
-                        <tr>
-                            {{range $key, $value := .}}
-                            <td>{{$value}}</td>
-                            {{end}}
-                            <td class="actions">
-                                <a href="/admin/edit/{{.Model.Name}}/{{index . "id"}}" class="button edit">Edit</a>
-                                <a href="/admin/delete/{{.Model.Name}}/{{index . "id"}}" class="button delete">Delete</a>
-                            </td>
-                        </tr>
-                        {{end}}
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="controls">
-                <a href="/admin/create/{{.Model.Name}}" class="button create">Create New {{.Model.Name}}</a>
+            <div class="mt-6">
+                <a href="/admin/create/{{.Model.Name}}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Create New {{.Model.Name}}
+                </a>
             </div>
         </main>
     </div>
