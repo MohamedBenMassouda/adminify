@@ -1,5 +1,12 @@
 package sql_queries
 
-func ListQuery(tableName string) string {
-	return "SELECT * FROM " + tableName
+import (
+	"fmt"
+	"strings"
+)
+
+func ListQuery(tableName string, fields []string) string {
+	query := fmt.Sprintf("SELECT %s FROM %s", strings.Join(fields, ", "), tableName)
+
+	return query
 }
